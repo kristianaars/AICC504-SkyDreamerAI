@@ -1,4 +1,5 @@
 dreamerv3
 .dreamerv3
-venv
+venv*
 .idea
+logs
