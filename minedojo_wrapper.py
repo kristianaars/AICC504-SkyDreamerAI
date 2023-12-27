@@ -2,10 +2,10 @@ import math
 from abc import ABC
 
 import gym
-import minedojo.sim.wrappers
 import numpy as np
 from gym.spaces import Discrete, Box
 from skimage.transform import downscale_local_mean
+
 
 class MinedojoActionWrapper(gym.ActionWrapper, ABC):
 
@@ -44,11 +44,16 @@ class MinedojoObservationWrapper(gym.ObservationWrapper, ABC):
     def observation(self, obs):
         obs_img = obs['rgb']
         obs_img = np.moveaxis(obs_img, 0, 2)
-        return self.scale_image(obs_img)
+        obs_img = self.scale_image(obs_img)
+        return obs_img
 
     def scale_image(self, image, method='downsample_local_mean'):
         source_shape = image.shape
         target_shape = self.observation_space.shape
+
+        # No scaling required, return original image
+        if source_shape == target_shape:
+            return image
 
         assert target_shape[0] == target_shape[1], "Target shape must be quadratic"
 
@@ -57,5 +62,5 @@ class MinedojoObservationWrapper(gym.ObservationWrapper, ABC):
         image = image[:slice_width, :slice_width]
 
         if method == 'downsample_local_mean':
-            downscale_factor = math.floor(slice_width / target_shape[0])
-            return downscale_local_mean(image, (downscale_factor, downscale_factor))
+            sc_fc = math.floor(slice_width / target_shape[0])
+            return downscale_local_mean(image, (sc_fc, sc_fc, 1)).astype(np.uint8)

@@ -11,9 +11,9 @@ def main():
     config = embodied.Config(dreamerv3.configs['defaults'])
     config = config.update(dreamerv3.configs['medium'])
     config = config.update({
-      'logdir': '~/logdir/run1',
+      'logdir': '~/logdir/run2',
       'run.train_ratio': 64,
-      'run.log_every': 30,  # Seconds
+      'run.log_every': 10,  # Seconds
       'batch_size': 8,
       'jax.prealloc': False,
       'encoder.mlp_keys': '$^',
@@ -36,7 +36,6 @@ def main():
 
     import minedojo
     from minedojo_wrapper import MinedojoActionWrapper, MinedojoObservationWrapper
-    import crafter
     from dreamerv3.embodied.envs import from_gym
 
     env = minedojo.make(task_id="harvest_milk", image_size=(560, 512))
