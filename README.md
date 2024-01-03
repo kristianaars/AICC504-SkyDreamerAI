@@ -1,9 +1,12 @@
+# SkyDreamer AI
 This project implements the [dreamerv3](https://danijar.com/project/dreamerv3/) algorithm to attempt to solve the Minecraft Skyblock challenge. It uses [minedojo](https://minedojo.org) as the environment supplier. 
 
 To begin training run the file [train.py](./train.py). Tensorboard is also supported, please see log-output for tensorboard log path and run the following command.
 ```
 tensorboard --logdir YOUR_LOGPATH_HERE
 ```
+
+OpenAI Gym is used to wrap the environment with custom actions, observation space, reward space, and minecraft world generation. These components can be found in [minedojo_wrapper.py](./minedojo_wrapper.py).
 
 ## Setup
 
