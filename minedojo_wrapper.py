@@ -10,7 +10,6 @@ from skimage.transform import downscale_local_mean
 
 from Environments import SkyBlockDrawer
 
-
 class MinedojoSkyBlockEnv(gym.Wrapper, ABC):
 
     def __init__(self,
@@ -18,7 +17,7 @@ class MinedojoSkyBlockEnv(gym.Wrapper, ABC):
                  island_margin=50,
                  image_size=(560, 512),
                  obs_size=(64, 64),
-                 break_speed_multiplier=10):
+                 break_speed_multiplier=100):
         self.draw_string, respawn_locations = SkyBlockDrawer.draw_skyblock_grid(n_islands, marg=island_margin)
 
         env = minedojo.make(
@@ -57,8 +56,9 @@ class MinedojoActionWrapper(gym.ActionWrapper, ABC):
         "forward", "backward", "jump",
         "cam_pitch_l", "cam_pitch_r",
         "cam_yaw_up", "cam_yaw_down",
-        "attack", "place",
-        "craft_pickaxe", "craft_table", "craft_sticks", "craft_planks"
+        "attack",
+        "craft_pickaxe", "craft_table", "craft_sticks", "craft_planks",
+        "place_table"
     ]
 
     FORWARD = actions.index("forward")
@@ -69,11 +69,11 @@ class MinedojoActionWrapper(gym.ActionWrapper, ABC):
     CAM_YAW_DOWN = actions.index("cam_yaw_down")
     ATTACK = actions.index("attack")
     JUMP = actions.index("jump")
-    PLACE = actions.index("place")
     CRAFT_PICKAXE = actions.index("craft_pickaxe")
     CRAFT_TABLE = actions.index("craft_table")
     CRAFT_STICKS = actions.index("craft_sticks")
     CRAFT_PLANKS = actions.index("craft_planks")
+    PLACE_TABLE = actions.index("place_table")
 
     def __init__(self, env):
         super().__init__(env)
@@ -88,7 +88,7 @@ class MinedojoActionWrapper(gym.ActionWrapper, ABC):
         cam_yaw_down = action == self.CAM_YAW_DOWN
         attack = action == self.ATTACK
         jump = action == self.JUMP
-        place = action == self.PLACE
+        place_table = action == self.PLACE_TABLE
 
         craft_id = self.craft_id["wooden_pickaxe"] if action == self.CRAFT_PICKAXE \
             else self.craft_id["crafting_table"] if action == self.CRAFT_TABLE \
@@ -103,7 +103,7 @@ class MinedojoActionWrapper(gym.ActionWrapper, ABC):
             1 if jump else 0,
             11 if cam_yaw_up else 13 if cam_yaw_down else 12,  # 3
             11 if cam_pitch_l else 13 if cam_pitch_r else 12,  # 4
-            3 if attack else 4 if craft else 6 if place else 0,
+            3 if attack else 4 if craft else 0,
             craft_id,
             0,
         ]
@@ -178,19 +178,18 @@ class MinedojoSkyBlockRewardWrapper(gym.Wrapper, ABC):
     def __init__(self, env,
                  terminate_at_y_pos=-5,
                  exploration_reward=1,
-                 death_penalty=-100,
+                 death_penalty=-1000,
                  pickup_block_reward_dict=None):
         super().__init__(env)
 
         if pickup_block_reward_dict is None:
             pickup_block_reward_dict = {
-                'wood': 15,
+                'wood': 10,
                 'dirt': 5,
-                'sticks': 10,
-                'planks': 15,
-                'crafting_table': 30,
-                'wooden_pickaxe': 100,
-                'cobblestone': 1000
+                'sticks': 15,
+                'planks': 20,
+                'crafting_table': 100,
+                'wooden_pickaxe': 800,
             }
 
         self.pickup_block_reward_dict = pickup_block_reward_dict
@@ -238,5 +237,3 @@ class MinedojoSkyBlockRewardWrapper(gym.Wrapper, ABC):
             reward += self.pickup_block_reward_dict[delta_inv_name_craft] * delta_inv_quantity_craft
 
         return reward
-
-
